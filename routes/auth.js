@@ -41,19 +41,24 @@ router.post('/register', async (req, res) => {
         )
 
         // Send welcome email
-        await resend.emails.send({
-            from: 'bogstar21@gmail.com',
-            to: email,
-            subject: 'Welcome to Auth API',
-            html: `
-        <div style="font-family:monospace;background:#0a0a0a;color:#00ff88;padding:32px;border-radius:6px;">
-          <h2 style="color:#00ff88;letter-spacing:3px;">ACCESS GRANTED</h2>
-          <p style="color:#e0e0e0;margin-top:16px;">Your account has been created.</p>
-          <p style="color:#555;margin-top:8px;">Email: ${email}</p>
-          <p style="color:#555;margin-top:32px;font-size:12px;">auth-api — terminal v1.0</p>
-        </div>
-      `
-        })
+        try {
+            const emailResult = await resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to: email,
+                subject: 'Welcome to Auth API',
+                html: `
+          <div style="font-family:monospace;background:#0a0a0a;color:#00ff88;padding:32px;border-radius:6px;">
+            <h2 style="color:#00ff88;letter-spacing:3px;">ACCESS GRANTED</h2>
+            <p style="color:#e0e0e0;margin-top:16px;">Your account has been created.</p>
+            <p style="color:#555;margin-top:8px;">Email: ${email}</p>
+            <p style="color:#555;margin-top:32px;font-size:12px;">auth-api — terminal v1.0</p>
+          </div>
+        `
+            })
+            console.log('Resend result:', JSON.stringify(emailResult))
+        } catch (emailErr) {
+            console.error('Resend error:', emailErr.message)
+        }
 
         res.status(201).json({ user: result.rows[0] })
 
@@ -62,7 +67,6 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' })
     }
 })
-
 // POST /auth/login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body
