@@ -18,3 +18,5 @@ const authenticateToken = require('./middleware/auth')
 app.get('/me', authenticateToken, (req, res) => {
     res.json({ user: req.user })
 })
+
+app.use(express.static('public'))

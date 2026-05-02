@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>auth-api — terminal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --green: #00ff88;
+      --green-dim: #00cc6a;
+      --green-dark: #003322;
+      --bg: #0a0a0a;
+      --surface: #111;
+      --border: #1a1a1a;
+      --text: #e0e0e0;
+      --muted: #555;
+      --error: #ff4444;
+    }
+
+    body {
+      background: #050505;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Share Tech Mono', monospace;
+      padding: 24px;
+    }
+
+    .terminal {
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      max-width: 520px;
+      border: 1px solid #222;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0, 255, 136, 0.04);
+    }
+
+    .titlebar {
+      background: #111;
+      border-bottom: 1px solid #222;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-r {
+      background: #ff5f57;
+    }
+
+    .dot-y {
+      background: #febc2e;
+    }
+
+    .dot-g {
+      background: #28c840;
+    }
+
+    .titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    .body {
+      padding: 28px 32px;
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .prompt-symbol {
+      color: var(--green);
+      font-size: 14px;
+    }
+
+    .prompt-path {
+      color: var(--green-dim);
+      font-size: 13px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--green);
+      animation: blink 1s infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.2;
+      }
+    }
+
+    .tabs {
+      display: flex;
+      border: 1px solid #222;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .tab {
+      padding: 8px 24px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      background: #0a0a0a;
+      color: var(--muted);
+      border: none;
+      cursor: pointer;
+      border-right: 1px solid #222;
+      transition: all 0.15s;
+      text-transform: uppercase;
+    }
+
+    .tab:last-child {
+      border-right: none;
+    }
+
+    .tab.active {
+      background: var(--green-dark);
+      color: var(--green);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text);
+      background: #151515;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .field-wrap {
+      display: flex;
+      align-items: center;
+      border: 1px solid #222;
+      background: #0d0d0d;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+
+    .field-wrap:focus-within {
+      border-color: var(--green);
+    }
+
+    .field-prefix {
+      padding: 0 10px;
+      color: var(--green);
+      font-size: 13px;
+      border-right: 1px solid #222;
+      height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 10px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      width: 100%;
+    }
+
+    .field-input::placeholder {
+      color: #333;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      margin-top: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--green-dark);
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .output {
+      margin-top: 20px;
+      border: 1px solid #1a1a1a;
+      background: #0d0d0d;
+      border-radius: 2px;
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.8;
+      min-height: 60px;
+      display: none;
+    }
+
+    .output.visible {
+      display: block;
+    }
+
+    .out-line {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .out-symbol {
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .out-success {
+      color: var(--green);
+    }
+
+    .out-error {
+      color: var(--error);
+    }
+
+    .out-key {
+      color: #888;
+    }
+
+    .out-val {
+      color: var(--text);
+    }
+
+    .out-token {
+      color: var(--green-dim);
+      word-break: break-all;
+      font-size: 11px;
+    }
+
+    .status-bar {
+      margin-top: 20px;
+      padding: 8px 0 0;
+      border-top: 1px solid #1a1a1a;
+      display: flex;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      margin-right: 5px;
+      animation: blink 1.5s infinite;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="terminal">
+    <div class="titlebar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="titlebar-text">auth-api — terminal v1.0</div>
+    </div>
+    <div class="body">
+      <div class="prompt-line">
+        <span class="prompt-symbol">➜</span>
+        <span class="prompt-path">~/auth-api</span>
+        <span class="cursor"></span>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('register')">register</button>
+        <button class="tab" onclick="switchTab('login')">login</button>
+        <button class="tab" onclick="switchTab('me')">whoami</button>
+      </div>
+
+      <div id="tab-register" class="section active">
+        <div class="field">
+          <span class="field-label">email</span>
+          <div class="field-wrap">
+            <span class="field-prefix">@</span>
+            <input class="field-input" type="email" id="reg-email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">password</span>
+          <div class="field-wrap">
+            <span class="field-prefix">#</span>
+            <input class="field-input" type="password" id="reg-pass" placeholder="••••••••••••">
+          </div>
+        </div>
+        <button class="btn" onclick="doRegister(event)">[ execute register ]</button>
+        <div class="output" id="reg-output"></div>
+      </div>
+
+      <div id="tab-login" class="section">
+        <div class="field">
+          <span class="field-label">email</span>
+          <div class="field-wrap">
+            <span class="field-prefix">@</span>
+            <input class="field-input" type="email" id="login-email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">password</span>
+          <div class="field-wrap">
+            <span class="field-prefix">#</span>
+            <input class="field-input" type="password" id="login-pass" placeholder="••••••••••••">
+          </div>
+        </div>
+        <button class="btn" onclick="doLogin(event)">[ execute login ]</button>
+        <div class="output" id="login-output"></div>
+      </div>
+
+      <div id="tab-me" class="section">
+        <div class="field">
+          <span class="field-label">access token</span>
+          <div class="field-wrap">
+            <span class="field-prefix">$</span>
+            <input class="field-input" type="text" id="me-token" placeholder="paste your JWT here...">
+          </div>
+        </div>
+        <button class="btn" onclick="doMe(event)">[ identify ]</button>
+        <div class="output" id="me-output"></div>
+      </div>
+
+      <div class="status-bar">
+        <span><span class="status-dot"></span>connected</span>
+        <span style="color:#333">https://auth-api-ovmb.onrender.com</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://auth-api-ovmb.onrender.com';
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', ['register', 'login', 'me'][i] === name);
+      });
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+    }
+
+    function renderOutput(elId, data, isError) {
+      const el = document.getElementById(elId);
+      el.classList.add('visible');
+      if (isError) {
+        el.innerHTML = `<div class="out-line"><span class="out-symbol">✗</span><span class="out-error">${data.error || JSON.stringify(data)}</span></div>`;
+        return;
+      }
+      let html = `<div class="out-line"><span class="out-symbol" style="color:var(--green)">✓</span><span class="out-success">success</span></div>`;
+      for (const [k, v] of Object.entries(data)) {
+        const display = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        const isToken = k.toLowerCase().includes('token');
+        html += `<div class="out-line" style="margin-top:6px">
+        <span class="out-symbol">─</span>
+        <span class="out-key">${k}:</span>
+        <span class="${isToken ? 'out-token' : 'out-val'}">${isToken ? display.substring(0, 40) + '...' : display}</span>
+      </div>`;
+      }
+      el.innerHTML = html;
+    }
+
+    async function doRegister(e) {
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-pass').value;
+      if (!email || !password) return;
+      const btn = e.target;
+      btn.disabled = true; btn.textContent = '[ processing... ]';
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        renderOutput('reg-output', data, !res.ok);
+      } catch (err) {
+        renderOutput('reg-output', { error: err.message }, true);
+      }
+      btn.disabled = false; btn.textContent = '[ execute register ]';
+    }
+
+    async function doLogin(e) {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-pass').value;
+      if (!email || !password) return;
+      const btn = e.target;
+      btn.disabled = true; btn.textContent = '[ authenticating... ]';
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.accessToken) {
+          document.getElementById('me-token').value = data.accessToken;
+        }
+        renderOutput('login-output', data, !res.ok);
+      } catch (err) {
+        renderOutput('login-output', { error: err.message }, true);
+      }
+      btn.disabled = false; btn.textContent = '[ execute login ]';
+    }
+
+    async function doMe(e) {
+      const token = document.getElementById('me-token').value;
+      if (!token) return;
+      const btn = e.target;
+      btn.disabled = true; btn.textContent = '[ identifying... ]';
+      try {
+        const res = await fetch(`${API}/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        renderOutput('me-output', data.user || data, !res.ok);
+      } catch (err) {
+        renderOutput('me-output', { error: err.message }, true);
+      }
+      btn.disabled = false; btn.textContent = '[ identify ]';
+    }
+  </script>
+
+</body>
+
+</html>
